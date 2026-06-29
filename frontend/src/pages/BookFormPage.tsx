@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { bookService } from '@/services/bookService'
 import { categoryService } from '@/services/categoryService'
 import { locationService } from '@/services/locationService'
+import { getApiErrorMessage } from '@/services/apiError'
 import toast from 'react-hot-toast'
 
 const currentYear = new Date().getFullYear()
@@ -101,82 +102,68 @@ export default function BookFormPage({ mode }: BookFormPageProps) {
       } else {
         await bookService.updateBook(bookId!, payload)
         qc.invalidateQueries({ queryKey: ['book', bookId] })
+        // 一覧画面に戻ったときに編集内容が反映されるようにする
+        qc.invalidateQueries({ queryKey: ['books'] })
         toast.success('書籍を更新しました')
         navigate(`/books/${bookId}`)
       }
     } catch (err: unknown) {
-      toast.error((err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? '保存に失敗しました')
+      toast.error(getApiErrorMessage(err, '保存に失敗しました'))
     }
   }
 
   return (
-    <div className="max-w-xl mx-auto">
-      <h1 className="text-xl font-bold text-gray-800 mb-6">
+    <div className="mx-auto max-w-xl">
+      <h1 className="page-title mb-6">
         {mode === 'create' ? '書籍を登録' : '書籍を編集'}
       </h1>
-      <form onSubmit={handleSubmit(onSubmit)} data-testid="book-form" className="bg-white rounded-lg border p-6 space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} data-testid="book-form" className="card space-y-4 p-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            タイトル <span className="text-red-500">*</span>
+          <label className="field-label">
+            タイトル <span className="text-clay-600">*</span>
           </label>
-          <input
-            {...register('title')}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            data-testid="book-form-title-input"
-          />
-          {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
+          <input {...register('title')} className="input" data-testid="book-form-title-input" />
+          {errors.title && <p className="mt-1 text-xs text-clay-600">{errors.title.message}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">著者</label>
-          <input
-            {...register('author')}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            data-testid="book-form-author-input"
-          />
+          <label className="field-label">著者</label>
+          <input {...register('author')} className="input" data-testid="book-form-author-input" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
-          <input
-            {...register('isbn')}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            data-testid="book-form-isbn-input"
-          />
+          <label className="field-label">ISBN</label>
+          <input {...register('isbn')} className="input" data-testid="book-form-isbn-input" />
           {isbnValue && (
-            <p className="text-yellow-600 text-xs mt-1" data-testid="book-form-isbn-warning" style={{ display: 'none' }}>
+            <p className="mt-1 text-xs text-brass-600" data-testid="book-form-isbn-warning" style={{ display: 'none' }}>
               このISBNは既に登録されています
             </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">出版社</label>
-          <input
-            {...register('publisher')}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            data-testid="book-form-publisher-input"
-          />
+          <label className="field-label">出版社</label>
+          <input {...register('publisher')} className="input" data-testid="book-form-publisher-input" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">出版年</label>
+          <label className="field-label">出版年</label>
           <input
             type="number"
             {...register('published_year', { valueAsNumber: true })}
             min={1000}
             max={currentYear}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             data-testid="book-form-year-input"
           />
-          {errors.published_year && <p className="text-red-500 text-xs mt-1">{errors.published_year.message}</p>}
+          {errors.published_year && <p className="mt-1 text-xs text-clay-600">{errors.published_year.message}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
+          <label className="field-label">カテゴリ</label>
           <select
             {...register('category_id', { valueAsNumber: true })}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            className="input"
             data-testid="book-form-category-select"
           >
             <option value="">カテゴリなし</option>
@@ -187,10 +174,10 @@ export default function BookFormPage({ mode }: BookFormPageProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">保管場所</label>
+          <label className="field-label">保管場所</label>
           <select
             {...register('location_id', { valueAsNumber: true })}
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            className="input"
             data-testid="book-form-location-select"
           >
             <option value="">保管場所なし</option>
@@ -200,11 +187,11 @@ export default function BookFormPage({ mode }: BookFormPageProps) {
           </select>
         </div>
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 border-t border-line/70 pt-4">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-sm"
+            className="btn-secondary"
             data-testid="book-form-cancel-button"
           >
             キャンセル
@@ -212,7 +199,7 @@ export default function BookFormPage({ mode }: BookFormPageProps) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+            className="btn-primary"
             data-testid="book-form-submit-button"
           >
             {isSubmitting ? '保存中...' : '保存'}

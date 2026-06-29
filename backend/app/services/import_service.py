@@ -106,6 +106,9 @@ class ImportService:
                 success += 1
 
             except Exception as e:
+                # 1行の失敗でセッションが壊れ、以降の行（カテゴリ登録含む）が
+                # 連鎖的に失敗するのを防ぐためロールバックして復旧する
+                self.book_repo.db.rollback()
                 errors.append(f"{line_no}行目: {str(e)}")
 
         return ImportResult(success=success, skipped=skipped, errors=errors)

@@ -1,5 +1,5 @@
 import apiClient from './apiClient'
-import type { BookListResponse, BookDetailResponse, BookCreateResponse, BookCreate } from '@/types'
+import type { BookResponse, BookListResponse, BookDetailResponse, BookCreateResponse, BookCreate } from '@/types'
 
 interface GetBooksParams {
   keyword?: string
@@ -24,8 +24,8 @@ export const bookService = {
     return data
   },
 
-  async updateBook(id: number, payload: Partial<BookCreate>): Promise<BookDetailResponse> {
-    const { data } = await apiClient.put<BookDetailResponse>(`/books/${id}`, payload)
+  async updateBook(id: number, payload: Partial<BookCreate>): Promise<BookResponse> {
+    const { data } = await apiClient.put<BookResponse>(`/books/${id}`, payload)
     return data
   },
 

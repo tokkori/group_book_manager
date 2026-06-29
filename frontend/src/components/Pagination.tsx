@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
 interface PaginationProps {
   page: number
   total: number
@@ -9,26 +11,32 @@ export default function Pagination({ page, total, size, onChange }: PaginationPr
   const totalPages = Math.ceil(total / size)
   if (totalPages <= 1) return null
 
+  const btn =
+    'flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-surface text-ink-soft transition-colors hover:border-brand-300 hover:text-brand-700 disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-soft'
+
   return (
-    <div className="flex items-center justify-center gap-3 mt-6">
+    <div className="mt-8 flex items-center justify-center gap-4">
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        className="px-3 py-1 rounded border disabled:opacity-40 hover:bg-gray-100"
+        className={btn}
+        aria-label="前のページ"
         data-testid="pagination-prev-button"
       >
-        ←
+        <ChevronLeft size={18} />
       </button>
-      <span className="text-sm text-gray-600" data-testid="pagination-current-page">
-        {page} / {totalPages}ページ（全{total}件）
+      <span className="text-sm text-ink-soft" data-testid="pagination-current-page">
+        <span className="font-serif text-base font-semibold text-ink">{page}</span>
+        <span className="text-ink-faint"> / {totalPages}</span> ページ（全{total}件）
       </span>
       <button
         onClick={() => onChange(page + 1)}
         disabled={page >= totalPages}
-        className="px-3 py-1 rounded border disabled:opacity-40 hover:bg-gray-100"
+        className={btn}
+        aria-label="次のページ"
         data-testid="pagination-next-button"
       >
-        →
+        <ChevronRight size={18} />
       </button>
     </div>
   )

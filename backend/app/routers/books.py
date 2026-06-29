@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.schemas.book import BookCreate, BookUpdate, BookListResponse, BookDetailResponse, BookCreateResponse
+from app.schemas.book import BookCreate, BookUpdate, BookResponse, BookListResponse, BookDetailResponse, BookCreateResponse
 from app.services.book_service import BookService
 
 router = APIRouter(prefix="/api/books", tags=["books"])
@@ -39,7 +39,7 @@ def get_book(
     return BookService(db).get_book(book_id)
 
 
-@router.put("/{book_id}", response_model=BookDetailResponse)
+@router.put("/{book_id}", response_model=BookResponse)
 def update_book(
     book_id: int,
     data: BookUpdate,

@@ -1,6 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { BookOpen, List, Tag, Upload, LogOut, MapPin } from 'lucide-react'
+import { BookOpen, List, Tag, Upload, LogOut, MapPin, User } from 'lucide-react'
+
+const navItems = [
+  { to: '/', label: '書籍一覧', icon: BookOpen },
+  { to: '/loans', label: '貸出管理', icon: List },
+  { to: '/categories', label: 'カテゴリ', icon: Tag },
+  { to: '/locations', label: '保管場所', icon: MapPin },
+  { to: '/import', label: 'インポート', icon: Upload },
+]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { currentUser, logout } = useAuth()
@@ -12,34 +20,47 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-blue-600">
-            <BookOpen size={24} />
-            <span>書籍管理</span>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-20 bg-brand-700 text-paper shadow-header">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-3 px-4 py-3">
+          <Link to="/" className="group flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brass-400 text-brand-900 shadow-sm ring-1 ring-brass-200/60">
+              <BookOpen size={20} strokeWidth={2.2} />
+            </span>
+            <span className="leading-tight">
+              <span className="block font-serif text-lg font-bold tracking-wide">書籍管理</span>
+              <span className="block text-[10px] font-medium uppercase tracking-[0.25em] text-brass-200">
+                Reading Room
+              </span>
+            </span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-              <BookOpen size={16} /> 書籍一覧
-            </Link>
-            <Link to="/loans" className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-              <List size={16} /> 貸出管理
-            </Link>
-            <Link to="/categories" className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-              <Tag size={16} /> カテゴリ
-            </Link>
-            <Link to="/locations" className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-              <MapPin size={16} /> 保管場所
-            </Link>
-            <Link to="/import" className="flex items-center gap-1 text-gray-600 hover:text-blue-600">
-              <Upload size={16} /> インポート
-            </Link>
-            <span className="text-gray-400">|</span>
-            <span className="text-gray-600">{currentUser?.display_name}</span>
+
+          <nav className="flex flex-wrap items-center gap-1">
+            {navItems.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-brand-600 text-white shadow-inner'
+                      : 'text-paper/75 hover:bg-brand-600/60 hover:text-white'
+                  }`
+                }
+              >
+                <Icon size={16} /> {label}
+              </NavLink>
+            ))}
+
+            <span className="mx-1 hidden h-6 w-px bg-paper/20 sm:block" />
+
+            <span className="flex items-center gap-1.5 text-sm text-paper/70">
+              <User size={15} /> {currentUser?.display_name}
+            </span>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 text-red-500 hover:text-red-700"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-paper/70 transition-colors hover:bg-clay-600/70 hover:text-white"
               data-testid="logout-button"
             >
               <LogOut size={16} /> ログアウト
@@ -47,9 +68,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
-        {children}
-      </main>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+
+      <footer className="border-t border-line/70 py-5 text-center text-xs text-ink-faint">
+        書籍管理システム · Reading Room edition
+      </footer>
     </div>
   )
 }

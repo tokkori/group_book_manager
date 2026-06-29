@@ -1,10 +1,15 @@
 import { useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { importService } from '@/services/importService'
+import { getApiErrorMessage } from '@/services/apiError'
 import type { ImportResult } from '@/types'
 import toast from 'react-hot-toast'
-import { Upload, FileText, CheckCircle, AlertCircle, SkipForward } from 'lucide-react'
+import { Upload, FileText, CheckCircle, AlertCircle, SkipForward, Info } from 'lucide-react'
+
+const codeCls = 'rounded bg-paper-dark px-1.5 py-0.5 font-mono text-[11px] text-ink'
 
 export default function ImportPage() {
+  const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [result, setResult] = useState<ImportResult | null>(null)
@@ -22,35 +27,54 @@ export default function ImportPage() {
     try {
       const res = await importService.importBooks(file)
       setResult(res)
+      // インポートで自動登録された新規カテゴリや書籍を一覧・絞り込みに反映する
+      qc.invalidateQueries({ queryKey: ['categories'] })
+      qc.invalidateQueries({ queryKey: ['books'] })
       toast.success(`${res.success}件インポートしました`)
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      toast.error(msg ?? 'インポートに失敗しました')
+      toast.error(getApiErrorMessage(err, 'インポートに失敗しました'))
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-gray-800">書籍データのインポート</h1>
-
-      <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-        <p className="font-medium mb-1">対応フォーマット</p>
-        <p>CSV / Excel（.xlsx, .xls）ファイルをアップロードしてください。</p>
-        <p className="mt-1">ヘッダー行が必要です。列名: <code>title</code>, <code>author</code>, <code>isbn</code>, <code>publisher</code>, <code>published_year</code>, <code>location</code>, <code>category</code></p>
-        <p className="mt-1 text-xs">日本語ヘッダー（タイトル、著者、ISBN、出版社、出版年、場所、カテゴリ）も対応しています。</p>
+    <div className="mx-auto max-w-lg space-y-6">
+      <div>
+        <h1 className="page-title">書籍データのインポート</h1>
+        <p className="mt-1 text-sm text-ink-faint">CSV / Excel から蔵書を一括登録します</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border p-5 space-y-4">
+      <div className="flex gap-3 rounded-2xl border border-brand-100 bg-brand-50/70 p-4 text-sm text-brand-800">
+        <Info size={18} className="mt-0.5 shrink-0 text-brand-500" />
+        <div className="space-y-1">
+          <p className="font-semibold">対応フォーマット</p>
+          <p>CSV / Excel（.xlsx, .xls）ファイルをアップロードしてください。ヘッダー行が必要です。</p>
+          <p className="flex flex-wrap items-center gap-1">
+            列名:
+            <code className={codeCls}>title</code>
+            <code className={codeCls}>author</code>
+            <code className={codeCls}>isbn</code>
+            <code className={codeCls}>publisher</code>
+            <code className={codeCls}>published_year</code>
+            <code className={codeCls}>location</code>
+            <code className={codeCls}>category</code>
+          </p>
+          <p className="text-xs text-brand-700/80">
+            日本語ヘッダー（タイトル、著者、ISBN、出版社、出版年、場所、カテゴリ）も対応しています。
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="card space-y-4 p-5">
         <div
-          className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
+          className="cursor-pointer rounded-xl border-2 border-dashed border-line bg-paper/50 p-8 text-center transition-colors hover:border-brand-400 hover:bg-brand-50/40"
           onClick={() => fileRef.current?.click()}
         >
-          <Upload size={32} className="mx-auto text-gray-300 mb-2" />
-          <p className="text-sm text-gray-500">
+          <Upload size={32} className="mx-auto mb-2 text-brand-300" />
+          <p className="text-sm text-ink-soft">
             {file ? (
-              <span className="flex items-center justify-center gap-2 text-blue-600">
+              <span className="flex items-center justify-center gap-2 font-medium text-brand-700">
                 <FileText size={16} /> {file.name}
               </span>
             ) : 'ここをクリックしてファイルを選択'}
@@ -67,7 +91,7 @@ export default function ImportPage() {
         <button
           type="submit"
           disabled={!file || isLoading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+          className="btn-primary w-full"
           data-testid="import-submit-button"
         >
           {isLoading ? 'インポート中...' : 'インポート開始'}
@@ -75,23 +99,23 @@ export default function ImportPage() {
       </form>
 
       {result && (
-        <div className="bg-white rounded-lg border p-5 space-y-3" data-testid="import-result">
-          <h2 className="font-semibold text-gray-700">インポート結果</h2>
-          <div className="flex gap-6 text-sm">
-            <span className="flex items-center gap-1 text-green-600">
+        <div className="card space-y-3 p-5" data-testid="import-result">
+          <h2 className="section-title">インポート結果</h2>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            <span className="flex items-center gap-1.5 font-medium text-brand-600">
               <CheckCircle size={16} /> 成功: {result.success}件
             </span>
-            <span className="flex items-center gap-1 text-gray-500">
+            <span className="flex items-center gap-1.5 text-ink-faint">
               <SkipForward size={16} /> スキップ: {result.skipped}件
             </span>
             {result.errors.length > 0 && (
-              <span className="flex items-center gap-1 text-red-500">
+              <span className="flex items-center gap-1.5 font-medium text-clay-600">
                 <AlertCircle size={16} /> エラー: {result.errors.length}件
               </span>
             )}
           </div>
           {result.errors.length > 0 && (
-            <ul className="text-xs text-red-600 bg-red-50 rounded p-3 space-y-1">
+            <ul className="space-y-1 rounded-lg bg-clay-50 p-3 text-xs text-clay-700">
               {result.errors.map((err, i) => <li key={i}>{err}</li>)}
             </ul>
           )}

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { locationService } from '@/services/locationService'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, MapPin } from 'lucide-react'
 
 export default function LocationPage() {
   const qc = useQueryClient()
@@ -59,59 +59,62 @@ export default function LocationPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-gray-800">保管場所管理</h1>
+    <div className="mx-auto max-w-xl space-y-6">
+      <h1 className="page-title">保管場所管理</h1>
 
-      <form onSubmit={handleCreate} className="bg-white rounded-lg border p-4 space-y-3" data-testid="location-create-form">
-        <h2 className="font-medium text-gray-700">新しい保管場所を作成</h2>
+      <form onSubmit={handleCreate} className="card space-y-3 p-5" data-testid="location-create-form">
+        <h2 className="section-title">新しい保管場所を作成</h2>
         <div className="flex gap-2">
           <input
             type="text" placeholder="保管場所名（例: 棚A-1）" value={newName}
             onChange={(e) => setNewName(e.target.value)} required
-            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+            className="input flex-1"
             data-testid="location-name-input"
           />
-          <button
-            type="submit"
-            className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
-            data-testid="location-create-button"
-          >
+          <button type="submit" className="btn-primary" data-testid="location-create-button">
             <Plus size={16} /> 作成
           </button>
         </div>
       </form>
 
-      <ul className="space-y-2" data-testid="location-list">
+      <ul className="space-y-2.5" data-testid="location-list">
         {locations?.map((loc) => (
-          <li key={loc.id} className="bg-white rounded-lg border p-3">
+          <li key={loc.id} className="card p-4">
             {editId === loc.id ? (
               <div className="flex items-center gap-2">
                 <input
                   value={editName} onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  className="input flex-1"
                 />
-                <button onClick={() => handleUpdate(loc.id)} className="p-1 text-green-600 hover:text-green-800">
-                  <Check size={18} />
+                <button onClick={() => handleUpdate(loc.id)} className="btn-primary px-3 py-2">
+                  <Check size={16} />
                 </button>
-                <button onClick={() => setEditId(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                  <X size={18} />
+                <button onClick={() => setEditId(null)} className="btn-secondary px-3 py-2">
+                  <X size={16} />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-gray-800">{loc.name}</p>
-                <div className="flex gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500">
+                    <MapPin size={15} />
+                  </span>
+                  <p className="font-medium text-ink">{loc.name}</p>
+                </div>
+                <div className="flex gap-1">
                   <button
                     onClick={() => startEdit(loc.id, loc.name)}
-                    className="p-1 text-gray-400 hover:text-blue-600"
+                    className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-paper-dark hover:text-brand-600"
                     data-testid={`location-edit-button-${loc.id}`}
+                    aria-label="編集"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => setDeleteTarget({ id: loc.id, name: loc.name })}
-                    className="p-1 text-gray-400 hover:text-red-600"
+                    className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-clay-50 hover:text-clay-600"
                     data-testid={`location-delete-button-${loc.id}`}
+                    aria-label="削除"
                   >
                     <Trash2 size={16} />
                   </button>

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { categoryService } from '@/services/categoryService'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, Tag } from 'lucide-react'
 
 export default function CategoryPage() {
   const qc = useQueryClient()
@@ -61,75 +61,78 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-gray-800">カテゴリ管理</h1>
+    <div className="mx-auto max-w-xl space-y-6">
+      <h1 className="page-title">カテゴリ管理</h1>
 
       {/* 新規作成フォーム */}
-      <form onSubmit={handleCreate} className="bg-white rounded-lg border p-4 space-y-3" data-testid="category-create-form">
-        <h2 className="font-medium text-gray-700">新しいカテゴリを作成</h2>
+      <form onSubmit={handleCreate} className="card space-y-3 p-5" data-testid="category-create-form">
+        <h2 className="section-title">新しいカテゴリを作成</h2>
         <input
           type="text" placeholder="カテゴリ名（必須）" value={newName}
           onChange={(e) => setNewName(e.target.value)} required
-          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+          className="input"
           data-testid="category-name-input"
         />
         <input
           type="text" placeholder="説明（任意）" value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+          className="input"
           data-testid="category-desc-input"
         />
-        <button
-          type="submit"
-          className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
-          data-testid="category-create-button"
-        >
+        <button type="submit" className="btn-primary" data-testid="category-create-button">
           <Plus size={16} /> 作成
         </button>
       </form>
 
       {/* カテゴリ一覧 */}
-      <ul className="space-y-2" data-testid="category-list">
+      <ul className="space-y-2.5" data-testid="category-list">
         {categories?.map((cat) => (
-          <li key={cat.id} className="bg-white rounded-lg border p-3">
+          <li key={cat.id} className="card p-4">
             {editId === cat.id ? (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <input
                   value={editName} onChange={(e) => setEditName(e.target.value)}
-                  className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  className="input"
                 />
                 <input
                   value={editDesc} onChange={(e) => setEditDesc(e.target.value)}
                   placeholder="説明"
-                  className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  className="input"
                 />
                 <div className="flex gap-2">
-                  <button onClick={() => handleUpdate(cat.id)} className="p-1 text-green-600 hover:text-green-800">
-                    <Check size={18} />
+                  <button onClick={() => handleUpdate(cat.id)} className="btn-primary px-3 py-1.5">
+                    <Check size={16} /> 保存
                   </button>
-                  <button onClick={() => setEditId(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                    <X size={18} />
+                  <button onClick={() => setEditId(null)} className="btn-secondary px-3 py-1.5">
+                    <X size={16} /> キャンセル
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">{cat.name}</p>
-                  {cat.description && <p className="text-xs text-gray-400 mt-0.5">{cat.description}</p>}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500">
+                    <Tag size={15} />
+                  </span>
+                  <div>
+                    <p className="font-medium text-ink">{cat.name}</p>
+                    {cat.description && <p className="mt-0.5 text-xs text-ink-faint">{cat.description}</p>}
+                  </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <button
                     onClick={() => startEdit(cat.id, cat.name, cat.description)}
-                    className="p-1 text-gray-400 hover:text-blue-600"
+                    className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-paper-dark hover:text-brand-600"
                     data-testid={`category-edit-button-${cat.id}`}
+                    aria-label="編集"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
-                    className="p-1 text-gray-400 hover:text-red-600"
+                    className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-clay-50 hover:text-clay-600"
                     data-testid={`category-delete-button-${cat.id}`}
+                    aria-label="削除"
                   >
                     <Trash2 size={16} />
                   </button>
